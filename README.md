@@ -7,7 +7,7 @@ Collection of scripts for single cell RNA-seq analysis.
 # Environment Setup
 # Scripts
 ## converter.py
-Cross compatible single cell object converter for Seurat version 3.1.2, Scanpy version 1.4.4, and SingleCellExperiment (sce) version 1.8.0. The first and second arguments are the absolute paths for the input and desired output file type.
+Cross compatible single cell object converter for Seurat version 3.1.2, Scanpy version 1.4.4, and SingleCellExperiment (sce) version 1.8.0. The first and second arguments must be the absolute paths for the input and desired output file type.
 
 #### Seurat to Scanpy
 ```
