@@ -5,31 +5,33 @@ Program: converter.py
 Author: Andrew Blair
 Email: andrew.blair@gladstone.ucsf.edu
 
-Cross compatible single cell object converter for Seurat version 3.1.2, Scanpy version 1.4.4, and SingleCellExperiment (sce) version 1.8.0. The first and second arguments must be the absolute paths for the input and desired output file type.
+Description: Cross compatible single cell object converter for Seurat version 3.1.2, Scanpy version 1.4.4, and SingleCellExperiment (sce) version 1.8.0. The first and second arguments must be the absolute paths for the input and desired output file type.
 
 Example:
 
-python3 converter.py
-
 # Seurat to Scanpy
-python3 converter.py
+python3 converter.py --input_seurat <path to rds> --output_scanpy <path to h5ad>
 
 # Scanpy to Seurat
-python3 converter.py
+python3 converter.py --input_scanpy <path to h5ad> --output_seurat <path to rds>
 
 # Seurat to SingleCellExperiment
-python3 converter.py
+python3 converter.py --input_seurat <path to rds> --output_sce <path to Rdata>
 
 # SingleCellExperiment to Seurat
-python3 converter.py
+python3 converter.py --input_sce <path to Rdata> --output_seurat <path to rds>
+
+# SingleCellExperiment to Scanpy
+python3 converer.py --input_sce <path to Rdata> --output_scanpy <path to rds>
 
 
 Notes:
+* This script is the primary interface for the single cell file object converter but relies on utils/converter.R, which users can run independently. 
 * Using subprocess module because sourcing Seurat using rpy2 causes segmentation fault.
 """
+
 import os
 import argparse
-import itertools
 import subprocess
 import pandas as pd
 import scanpy as sc
@@ -37,7 +39,7 @@ import anndata2ri
 import rpy2.robjects as robjects
 anndata2ri.activate()
 
-def scanpy_to_seurat(input_scanpy, output_seurat, meta_export='no'):
+def scanpy_to_seurat(input_scanpy, output_seurat):
     '''
     Convert a Seurat object to a Scanpy object
     
@@ -45,7 +47,17 @@ def scanpy_to_seurat(input_scanpy, output_seurat, meta_export='no'):
     :param output_seurat: str, Seurat object file path
     return: None
     '''
-    subprocess.call('Rscript utils/converter.R -i ' + input_scanpy + ' -o ' + output_seurat + ' -m ' + meta_export, shell=True)
+    subprocess.call('Rscript utils/converter.R --scanpy_to_seurat ' + input_scanpy + ' ' + output_seurat, shell=True)
+
+def seurat_to_sce(input_seurat, output_sce, meta_export='no'):
+    '''
+    Convert a Seurat object to a SingleCellExperiment object
+    
+    :param input_seurat: str, Seurat object file path
+    :param output_sce: str, SingleCellExperiment object file path
+    return: None
+    '''
+    subprocess.call('Rscript utils/converter.R --seurat_to_sce ' + input_seurat + ' ' + output_sce + ' --meta ' + meta_export, shell=True)
 
 def seurat_to_scanpy(input_seurat, output_scanpy):
     '''
@@ -60,16 +72,6 @@ def seurat_to_scanpy(input_seurat, output_scanpy):
     os.remove('meta.csv')
     sce_to_scanpy('sce.rds', output_scanpy, meta_df = meta_df)
     
-def seurat_to_sce(input_seurat, output_sce, meta_export='no'):
-    '''
-    Convert a Seurat object to a SingleCellExperiment object
-    
-    :param input_seurat: str, Seurat object file path
-    :param output_sce: str, SingleCellExperiment object file path
-    return: None
-    '''
-    subprocess.call('Rscript utils/converter.R -i ' + input_seurat + ' -o ' + output_sce + ' -m ' + meta_export, shell=True)
-
 def sce_to_scanpy(input_sce, output_scanpy, meta_df=None):
     '''
     Convert a SingleCellExperiment object to a Scanpy object
@@ -80,7 +82,9 @@ def sce_to_scanpy(input_sce, output_scanpy, meta_df=None):
     '''
     readRDS = robjects.r['readRDS']
     adata = readRDS(input_sce)
-    if meta_df:
+    if not meta_df.empty:
+        meta_df = meta_df.set_index('Unnamed: 0')
+        meta_df.index.name = 'index'
         adata.obs = meta_df
     adata.write(output_scanpy)
 
