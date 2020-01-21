@@ -70,9 +70,9 @@ def seurat_to_scanpy(input_seurat, output_scanpy):
     seurat_to_sce(input_seurat, 'sce.rds', meta_export='yes')
     meta_df = pd.read_csv('meta.csv')
     os.remove('meta.csv')
-    sce_to_scanpy('sce.rds', output_scanpy, meta_df = meta_df)
+    sce_to_scanpy('sce.rds', output_scanpy, meta_df = meta_df, remove_sce=True)
     
-def sce_to_scanpy(input_sce, output_scanpy, meta_df=None):
+def sce_to_scanpy(input_sce, output_scanpy, meta_df=None, remove_sce=False):
     '''
     Convert a SingleCellExperiment object to a Scanpy object
     
@@ -82,6 +82,8 @@ def sce_to_scanpy(input_sce, output_scanpy, meta_df=None):
     '''
     readRDS = robjects.r['readRDS']
     adata = readRDS(input_sce)
+    if remove_sce:
+        os.remove('sce.rds')
     if not meta_df.empty:
         meta_df = meta_df.set_index('Unnamed: 0')
         meta_df.index.name = 'index'
