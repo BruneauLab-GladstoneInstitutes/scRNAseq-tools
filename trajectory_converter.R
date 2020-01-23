@@ -2,6 +2,12 @@ library(Seurat)
 library(monocle3)
 library(optparse)
 
+#' Seurat to CDS
+#' Converts a Scanpy file to CDS file format
+#' @param input_scanpy Seurat object file path
+#' @param output_seurat CDS object output path
+#' @return CDS file with extension .cds
+#' @export
 seurat_to_cds <- function(input_seurat, output_cds){
     sobj <- readRDS(input_seurat)
     gene_df <- as.data.frame(row.names(sobj@assays$RNA@data))
