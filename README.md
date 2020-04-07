@@ -9,12 +9,12 @@ Collection of scripts for single cell RNA-seq analysis.
 ## converter.py
 Cross compatible single cell object converter for Seurat version 3.1.2, Scanpy version 1.4.4, and SingleCellExperiment (sce) version 1.8.0.
 
-#### Scanpy to Seurat
+#### Seurat to Seurat
 ```
 python3 converter.py --input_seurat <path to rds> --output_scanpy <path to h5ad>
 ```
 
-#### Seurat to Scanpy
+#### Scanpy to Seurat
 ```
 python3 converter.py --input_scanpy <path to h5ad> --output_seurat <path to rds>
 ```
